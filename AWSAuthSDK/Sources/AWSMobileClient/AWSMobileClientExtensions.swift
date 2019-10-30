@@ -996,7 +996,8 @@ extension AWSMobileClient: AWSCognitoAuthDelegate {
         if (developerNavigationController?.visibleViewController != nil) {
             return developerNavigationController!.visibleViewController!
         }
-        return UIApplication.shared.keyWindow!.rootViewController!
+
+        return developerNavigationController!.view.window!.rootViewController!
     }
     
     public func shouldLaunchSignInVCIfRefreshTokenIsExpired() -> Bool {
