@@ -16,8 +16,8 @@
 #import <Foundation/Foundation.h>
 #import "AWSNetworking.h"
 
-FOUNDATION_EXPORT NSString *const AWSSignatureV4Algorithm;
-FOUNDATION_EXPORT NSString *const AWSSignatureV4Terminator;
+FOUNDATION_EXPORT NSString *const _Nonnull AWSSignatureV4Algorithm;
+FOUNDATION_EXPORT NSString *const _Nonnull AWSSignatureV4Terminator;
 
 @class AWSEndpoint;
 
@@ -25,20 +25,20 @@ FOUNDATION_EXPORT NSString *const AWSSignatureV4Terminator;
 
 @interface AWSSignatureSignerUtility : NSObject
 
-+ (NSData *)sha256HMacWithData:(NSData *)data withKey:(NSData *)key;
-+ (NSString *)hashString:(NSString *)stringToHash;
-+ (NSData *)hash:(NSData *)dataToHash;
-+ (NSString *)hexEncode:(NSString *)string;
-+ (NSString *)HMACSign:(NSData *)data withKey:(NSString *)key usingAlgorithm:(uint32_t)algorithm;
++ (nonnull NSData *)sha256HMacWithData:(nonnull NSData *)data withKey:(nonnull NSData *)key;
++ (nullable NSString *)hashString:(nonnull NSString *)stringToHash;
++ (nullable NSData *)hash:(nonnull NSData *)dataToHash;
++ (nullable NSString *)hexEncode:(nonnull NSString *)string;
++ (nullable NSString *)HMACSign:(nonnull NSData *)data withKey:(nonnull NSString *)key usingAlgorithm:(uint32_t)algorithm;
 
 @end
 
 @interface AWSSignatureV4Signer : NSObject <AWSNetworkingRequestInterceptor>
 
-@property (nonatomic, strong, readonly) id<AWSCredentialsProvider> credentialsProvider;
+@property (nonatomic, strong, readonly, nullable) id<AWSCredentialsProvider> credentialsProvider;
 
-- (instancetype)initWithCredentialsProvider:(id<AWSCredentialsProvider>)credentialsProvider
-                                   endpoint:(AWSEndpoint *)endpoint;
+- (nonnull instancetype)initWithCredentialsProvider:(nullable id<AWSCredentialsProvider>)credentialsProvider
+                                           endpoint:(nullable AWSEndpoint *)endpoint;
 
 /**
  Returns a URL signed using the SigV4 algorithm, using the current date, and including the session token (if any) as
@@ -54,14 +54,14 @@ FOUNDATION_EXPORT NSString *const AWSSignatureV4Terminator;
  @param signBody if true and the httpMethod is GET, sign an empty string as part of the signature content
  @return a task containing the signed URL
  */
-+ (AWSTask<NSURL *> *)generateQueryStringForSignatureV4WithCredentialProvider:(id<AWSCredentialsProvider>)credentialsProvider
-                                                                   httpMethod:(AWSHTTPMethod)httpMethod
-                                                               expireDuration:(int32_t)expireDuration
-                                                                     endpoint:(AWSEndpoint *)endpoint
-                                                                      keyPath:(NSString *)keyPath
-                                                               requestHeaders:(NSDictionary<NSString *, NSString *> *)requestHeaders
-                                                            requestParameters:(NSDictionary<NSString *, id> *)requestParameters
-                                                                     signBody:(BOOL)signBody;
++ (nonnull AWSTask<NSURL *> *)generateQueryStringForSignatureV4WithCredentialProvider:(nonnull id<AWSCredentialsProvider>)credentialsProvider
+                                                                           httpMethod:(AWSHTTPMethod)httpMethod
+                                                                       expireDuration:(int32_t)expireDuration
+                                                                             endpoint:(nonnull AWSEndpoint *)endpoint
+                                                                              keyPath:(nonnull NSString *)keyPath
+                                                                       requestHeaders:(nonnull NSDictionary<NSString *, NSString *> *)requestHeaders
+                                                                    requestParameters:(nonnull NSDictionary<NSString *, id> *)requestParameters
+                                                                             signBody:(BOOL)signBody;
 
 /**
  Returns a URL signed using the SigV4 algorithm.
@@ -83,41 +83,41 @@ FOUNDATION_EXPORT NSString *const AWSSignatureV4Terminator;
         If false, appends the X-AMZ-Security-Token to the end of the signed URL request parameters
  @return a task containing the signed URL
  */
-+ (AWSTask<NSURL *> *)sigV4SignedURLWithRequest:(NSURLRequest * _Nonnull)request
-                             credentialProvider:(id<AWSCredentialsProvider> _Nonnull)credentialsProvider
-                                     regionName:(NSString * _Nonnull)regionName
-                                    serviceName:(NSString * _Nonnull)serviceName
-                                           date:(NSDate * _Nonnull)date
-                                 expireDuration:(int32_t)expireDuration
-                                       signBody:(BOOL)signBody
-                               signSessionToken:(BOOL)signSessionToken;
++ (nonnull AWSTask<NSURL *> *)sigV4SignedURLWithRequest:(NSURLRequest * _Nonnull)request
+                                     credentialProvider:(id<AWSCredentialsProvider> _Nonnull)credentialsProvider
+                                             regionName:(NSString * _Nonnull)regionName
+                                            serviceName:(NSString * _Nonnull)serviceName
+                                                   date:(NSDate * _Nonnull)date
+                                         expireDuration:(int32_t)expireDuration
+                                               signBody:(BOOL)signBody
+                                       signSessionToken:(BOOL)signSessionToken;
 
-+ (NSString *)getCanonicalizedQueryStringForDate:(NSDate *)currentDate;
++ (nonnull NSString *)getCanonicalizedQueryStringForDate:(nonnull NSDate *)currentDate;
 
-+ (NSString *)getCanonicalizedRequest:(NSString *)method
-                                 path:(NSString *)path
-                                query:(NSString *)query
-                              headers:(NSDictionary *)headers
-                        contentSha256:(NSString *)contentSha256;
++ (nonnull NSString *)getCanonicalizedRequest:(nonnull NSString *)method
+                                         path:(nonnull NSString *)path
+                                        query:(nonnull NSString *)query
+                                      headers:(nonnull NSDictionary *)headers
+                                contentSha256:(nonnull NSString *)contentSha256;
 
-+ (NSData *)getV4DerivedKey:(NSString *)secret
-                       date:(NSString *)dateStamp
-                     region:(NSString *)regionName
-                    service:(NSString *)serviceName;
++ (nonnull NSData *)getV4DerivedKey:(nonnull NSString *)secret
+                               date:(nonnull NSString *)dateStamp
+                             region:(nonnull NSString *)regionName
+                            service:(nonnull NSString *)serviceName;
 
-+ (NSString *)getSignedHeadersString:(NSDictionary *)headers;
++ (nonnull NSString *)getSignedHeadersString:(nonnull NSDictionary *)headers;
 
 @end
 
 @interface AWSSignatureV2Signer : NSObject <AWSNetworkingRequestInterceptor>
 
-@property (nonatomic, strong, readonly) id<AWSCredentialsProvider> credentialsProvider;
+@property (nonatomic, strong, readonly, nullable) id<AWSCredentialsProvider> credentialsProvider;
 
-+ (instancetype)signerWithCredentialsProvider:(id<AWSCredentialsProvider>)credentialsProvider
-                                     endpoint:(AWSEndpoint *)endpoint;
++ (nonnull instancetype)signerWithCredentialsProvider:(nullable id<AWSCredentialsProvider>)credentialsProvider
+                                             endpoint:(nullable AWSEndpoint *)endpoint;
 
-- (instancetype)initWithCredentialsProvider:(id<AWSCredentialsProvider>)credentialsProvider
-                                   endpoint:(AWSEndpoint *)endpoint;
+- (nonnull instancetype)initWithCredentialsProvider:(nullable id<AWSCredentialsProvider>)credentialsProvider
+                                           endpoint:(nullable AWSEndpoint *)endpoint;
 
 @end
 
@@ -132,11 +132,11 @@ FOUNDATION_EXPORT NSString *const AWSSignatureV4Terminator;
  * Initialize the input stream with date, scope, signing key and signature
  * of request headers.
  **/
-- (instancetype)initWithInputStream:(NSInputStream *)stream
-                               date:(NSDate *)date
-                              scope:(NSString *)scope
-                           kSigning:(NSData *)kSigning
-                    headerSignature:(NSString *)headerSignature;
+- (nonnull instancetype)initWithInputStream:(nonnull NSInputStream *)stream
+                                       date:(nonnull NSDate *)date
+                                      scope:(nonnull NSString *)scope
+                                   kSigning:(nonnull NSData *)kSigning
+                            headerSignature:(nonnull NSString *)headerSignature;
 
 /**
  * Computes new content length after data being chunked encoded.
