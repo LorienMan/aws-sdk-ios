@@ -1,5 +1,5 @@
 //
-// Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright 2010-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License").
 // You may not use this file except in compliance with the License.
@@ -670,7 +670,6 @@ class AWSIoTDataManagerTests: XCTestCase {
     }
 
     func publishSubscribeWithCert(useALPN:Bool) {
-        var messageCount = 0
         var connected = false
         let hasConnected = self.expectation(description: "MQTT connection has been established")
         let hasDisconnected = self.expectation(description: "Disconnected")
@@ -741,22 +740,36 @@ class AWSIoTDataManagerTests: XCTestCase {
 
         let testMessage = "Test Message"
         let testTopic = "TestTopic"
+        gotMessage.expectedFulfillmentCount = 5
+        gotMessage.assertForOverFulfill = false
+        let subAckExpectation = self.expectation(description: "Subscription should be acknowledged")
+        let ackCallback: AWSIoTMQTTAckBlock = {
+            subAckExpectation.fulfill()
+        }
 
         //Subscribe to TestTopic
-        iotDataManager.subscribe(toTopic: testTopic, qoS: .messageDeliveryAttemptedAtLeastOnce, messageCallback: {
-            (payload) ->Void in
-            let stringValue:String = NSString(data: payload, encoding: String.Encoding.utf8.rawValue)! as String
-            print("received: \(stringValue)")
-            XCTAssertEqual(testMessage, stringValue)
-            messageCount = messageCount+1
-            if (messageCount >= 5 ) {
-                gotMessage.fulfill()
-            }
-        })
+        let subStatus = iotDataManager.subscribe(toTopic: testTopic,
+                                                 qoS: .messageDeliveryAttemptedAtLeastOnce,
+                                                 messageCallback: {
+                                                    (payload) ->Void in
+                                                    let stringValue:String = NSString(data: payload, encoding: String.Encoding.utf8.rawValue)! as String
+                                                    print("received: \(stringValue)")
+                                                    XCTAssertEqual(testMessage, stringValue)
+                                                    gotMessage.fulfill()
+        },
+                                                 ackCallback: ackCallback)
+        XCTAssertTrue(subStatus, "Subscription should be successful. Connection Status - \(iotDataManager.getConnectionStatus().rawValue)")
+        wait(for:[subAckExpectation], timeout:10)
 
         //Publish to TestTopic 5 times
-        for _ in 1...5 {
-            iotDataManager.publishString(testMessage, onTopic:testTopic, qoS:.messageDeliveryAttemptedAtLeastOnce)
+        for _ in 1...gotMessage.expectedFulfillmentCount {
+            let publishStatus = iotDataManager.publishString(testMessage,
+                                                             onTopic:testTopic,
+                                                             qoS:.messageDeliveryAttemptedAtLeastOnce,
+                                                             ackCallback: {
+                                                                print("Message published in topic \(testTopic))")
+            })
+            XCTAssertTrue(publishStatus, "Publish should be successful. Connection Status - \(iotDataManager.getConnectionStatus().rawValue)")
         }
 
         wait(for:[gotMessage], timeout:30)
@@ -790,7 +803,9 @@ class AWSIoTDataManagerTests: XCTestCase {
         for i in 1...numberOfAttempts  {
             hasConnected.add(self.expectation(description: "MQTT connection\(i) has been established"))
             hasDisconnected.add(self.expectation(description: "Disconnected\(i)"))
-            gotMessages.add(self.expectation(description: "Got message on subscription \(i)"))
+            let expectation = self.expectation(description: "Got message on subscription \(i)")
+            expectation.assertForOverFulfill = false
+            gotMessages.add(expectation)
             subConfirmed.add(self.expectation(description: "Subscription \(i) confirmed"))
         }
 
@@ -915,7 +930,9 @@ class AWSIoTDataManagerTests: XCTestCase {
         for i in 1...numberOfAttempts  {
             hasConnected.add(self.expectation(description: "MQTT connection\(i) has been established"))
             hasDisconnected.add(self.expectation(description: "Disconnected\(i)"))
-            gotMessages.add(self.expectation(description: "Got message on subscription \(i)"))
+            let expectation = self.expectation(description: "Got message on subscription \(i)")
+            expectation.assertForOverFulfill = false
+            gotMessages.add(expectation)
             subConfirmed.add(self.expectation(description: "Subscription \(i) confirmed"))
         }
 
@@ -1028,8 +1045,6 @@ class AWSIoTDataManagerTests: XCTestCase {
     }
 
     func testPublishSubscribeWithCallback() {
-        var messageCount = 0
-        var pubAckCount = 0
         var connected = false
         let hasConnected = self.expectation(description: "MQTT connection has been established")
         let hasDisconnected = self.expectation(description: "Disconnected")
@@ -1101,12 +1116,7 @@ class AWSIoTDataManagerTests: XCTestCase {
             let stringValue = NSString(data: payload, encoding: String.Encoding.utf8.rawValue)! as String
             print("received: \(stringValue)")
             XCTAssertEqual(testMessage, stringValue)
-
-            messageCount += 1
-
-            if (messageCount >= 5 ) {
-                gotMessage.fulfill()
-            }
+            gotMessage.fulfill()
         }
 
         let ackCallback: AWSIoTMQTTAckBlock = {
@@ -1123,13 +1133,12 @@ class AWSIoTDataManagerTests: XCTestCase {
 
         // Publish to TestTopic 5 times
         let pubAckCallback: AWSIoTMQTTAckBlock = {
-            pubAckCount += 1
-            if pubAckCount >= 5 {
-                publishesAcknowledged.fulfill()
-            }
+            publishesAcknowledged.fulfill()
         }
 
-        for _ in 1...5 {
+        publishesAcknowledged.expectedFulfillmentCount = 5
+        gotMessage.expectedFulfillmentCount = 5
+        for _ in 1...publishesAcknowledged.expectedFulfillmentCount {
             iotDataManager.publishString(testMessage,
                                          onTopic: testTopic,
                                          qoS: .messageDeliveryAttemptedAtLeastOnce,
@@ -1305,8 +1314,9 @@ class AWSIoTDataManagerTests: XCTestCase {
         var disconnectIssued = false
         let hasDisconnected = self.expectation(description: "Disconnected")
 
-        var messageCount = 0
         let gotMessage = self.expectation(description: "Got message on subscription")
+        gotMessage.expectedFulfillmentCount = 5
+        gotMessage.assertForOverFulfill = false
 
         func mqttEventCallback( _ status: AWSIoTMQTTStatus )
         {
@@ -1373,14 +1383,11 @@ class AWSIoTDataManagerTests: XCTestCase {
             let stringValue:String = NSString(data: payload, encoding: String.Encoding.utf8.rawValue)! as String
             print("received: \(stringValue)")
             XCTAssertEqual(testMessage, stringValue)
-            messageCount = messageCount + 1
-            if (messageCount >= 5 ) {
-                gotMessage.fulfill()
-            }
+            gotMessage.fulfill()
         })
 
         //Publish to TestTopic 5 times
-        for _ in 1...5 {
+        for _ in 1...gotMessage.expectedFulfillmentCount {
             iotDataManager.publishString(testMessage, onTopic:testTopic, qoS:.messageDeliveryAttemptedAtLeastOnce)
         }
 
@@ -1409,7 +1416,9 @@ class AWSIoTDataManagerTests: XCTestCase {
         for i in 1...numberOfAttempts  {
             hasConnected.add(self.expectation(description: "MQTT connection\(i) has been established"))
             hasDisconnected.add(self.expectation(description: "Disconnected\(i)"))
-            gotMessages.add(self.expectation(description: "Got message on subscription \(i)"))
+            let expectation = self.expectation(description: "Got message on subscription \(i)")
+            expectation.assertForOverFulfill = false
+            gotMessages.add(expectation)
             subConfirmed.add(self.expectation(description: "Subscription \(i) confirmed"))
         }
 
