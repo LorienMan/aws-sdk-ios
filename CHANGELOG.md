@@ -1,11 +1,49 @@
 # AWS Mobile SDK for iOS CHANGELOG
 
-## 2.13.2
+## Unreleased
+-Features for next release
+### Bug Fixes
+- **Amazon Pinpoint**
+  - Fix issue where SDK is not respecting developer set OptOut value. Persist the developer set optOut in user defaults. See [PR: #2552](https://github.com/aws-amplify/aws-sdk-ios/pull/2552)
+  
+## 2.13.4
+### New features
+- **Integration tests**
+    - AWS Mobile SDK for iOS integration tests are now provisioned from a CloudFormation stack created by [the new amplify-ci-support package](LINK TBD). See [the README](LINK TBD) for details on how to provision your account to run integration tests.
+
+- **AWSMobileClient**
+    - Added api to fetch userSub for the loggedin user. [PR #2599](https://github.com/aws-amplify/aws-sdk-ios/pull/2599)
+
+### Bug Fixes
+- **AWSMobileClient**
+    - Crash in `releaseSignInWait` api due to over fulfilling a fetchlock. See [Issue #1278](https://github.com/aws-amplify/aws-sdk-ios/issues/1278) and [PR #2571](https://github.com/aws-amplify/aws-sdk-ios/pull/2571)
+    - Fix `releaseSignInWait` for custom Auth to clear the lock correctly. [PR #2571](https://github.com/aws-amplify/aws-sdk-ios/pull/2571)
+
+- **AWSCognitoIdentityProvider**
+    - Removed cyclic retry logic in custom auth delegate. See [Issue #2504](https://github.com/aws-amplify/aws-sdk-ios/issues/2504), [PR #2571](https://github.com/aws-amplify/aws-sdk-ios/pull/2571)
+
+### Misc. Updates
+- Model updates for the following services:
+  - AWS Lambda
+
+## 2.13.3
+
+### New features
+- **AWS Core**
+  - Added support for `af-south-1` - Africa (Cape Town) region
+  - Added support for `eu-south-1` - Europe (Milan) region
+
+### Bug Fixes
+- **Amazon Pinpoint**
+  - Fix Missing address issue related to apps which have enabled push notifications, is using the pinpoint SDK, but is not registering the token with the endpoint [PR: #2455](https://github.com/aws-amplify/aws-sdk-ios/pull/2455)
 
 ### Misc. Updates
 - Model updates for the following services
   - Amazon EC2
   - Amazon Transcribe
+  - AWS Lambda
+  
+## 2.13.2
 
 ### New features
 - **AWSMobileClient** 
