@@ -162,7 +162,7 @@ NSString *const AWSSignatureV4Terminator = @"aws4_request";
 
             [request setValue:credentials.sessionKey forHTTPHeaderField:@"X-Amz-Security-Token"];
             if (self.endpoint.serviceType == AWSServiceS3 ||
-                ([hostArray firstObject] && [[hostArray firstObject] rangeOfString:@"s3"].location != NSNotFound) ) {
+                ([hostArray firstObject] && [[hostArray firstObject] rangeOfString:@"s3"].location == 0) ) {
                 //If it is a S3 Request
                 authorization = [self signS3RequestV4:request
                                          credentials:credentials];
