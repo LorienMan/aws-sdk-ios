@@ -19,6 +19,7 @@
 #import "AWSUICKeyChainStore.h"
 #import "AWSCocoaLumberjack.h"
 #import "AWSBolts.h"
+#import "AWSCategory.h"
 
 NSString *const AWSCognitoCredentialsProviderErrorDomain = @"com.amazonaws.AWSCognitoCredentialsProviderErrorDomain";
 
@@ -210,7 +211,7 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
     // 2. the credentials expires within 10 minutes.
     if (self.internalCredentials.accessKey
         && self.internalCredentials.secretKey
-        && [self.internalCredentials.expiration compare:[NSDate dateWithTimeIntervalSinceNow:10 * 60]] == NSOrderedDescending) {
+        && [self.internalCredentials.expiration compare:[[NSDate aws_clockSkewFixedDate] dateByAddingTimeInterval:10 * 60]] == NSOrderedDescending) {
 
         return [AWSTask taskWithResult:self.internalCredentials];
     }
@@ -645,7 +646,7 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
     // 1. The cached credentials are not nil.
     // 2. The credentials do not expire within 10 minutes.
     if (self.internalCredentials
-        && [self.internalCredentials.expiration compare:[NSDate dateWithTimeIntervalSinceNow:10 * 60]] == NSOrderedDescending) {
+        && [self.internalCredentials.expiration compare:[[NSDate aws_clockSkewFixedDate] dateByAddingTimeInterval:10 * 60]] == NSOrderedDescending) {
         return [AWSTask taskWithResult:self.internalCredentials];
     }
     
@@ -679,7 +680,7 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
             // 3. The credentials expire within 10 minutes.
             if ((!self.cachedLogins || [self.cachedLogins isEqualToDictionary:logins])
                 && self.internalCredentials
-                && [self.internalCredentials.expiration compare:[NSDate dateWithTimeIntervalSinceNow:10 * 60]] == NSOrderedDescending) {
+                && [self.internalCredentials.expiration compare:[[NSDate aws_clockSkewFixedDate] dateByAddingTimeInterval:10 * 60]] == NSOrderedDescending) {
                 return [AWSTask taskWithResult:self.internalCredentials];
             }
             
@@ -699,7 +700,7 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
             
             if ((!self.cachedLogins || [self.cachedLogins isEqualToDictionary:logins])
                 && self.internalCredentials
-                && [self.internalCredentials.expiration compare:[NSDate dateWithTimeIntervalSinceNow:10 * 60]] == NSOrderedDescending) {
+                && [self.internalCredentials.expiration compare:[[NSDate aws_clockSkewFixedDate] dateByAddingTimeInterval:10 * 60]] == NSOrderedDescending) {
                 return [AWSTask taskWithResult:self.internalCredentials];
             }
             
